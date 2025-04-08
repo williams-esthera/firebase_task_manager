@@ -28,28 +28,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _registerUser() async {
     if (_formKey.currentState!.validate()) {
-      String username = _usernameController.text.trim();
+      String email = _usernameController.text.trim();
       String password = _passwordController.text.trim();
 
-      // Check if username is already taken
-      bool isTaken = await _databaseService.isUsernameTaken(username);
-      if (isTaken) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Username is already taken')),
-          );
-        }
-        return;
-      }
-
-      UserState localStorage = UserState();
-
       try {
-        final userId = await _databaseService.addLogin(username, password);
+        final userId = await _databaseService.addLogin(email, password);
 
         if (userId != null) {
+          UserState localStorage = UserState();
           localStorage.userId = userId;
-          localStorage.username = username;
+          localStorage.username = email;
           
           if (mounted) {
             Navigator.pushReplacement(
@@ -59,17 +47,17 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             );
           }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Failed to create account')),
-            );
-          }
+        }
+      } on Exception catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString())),
+          );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error during registration: $e')),
+            const SnackBar(content: Text('Failed to create account')),
           );
         }
       }
@@ -88,14 +76,30 @@ class _RegisterPageState extends State<RegisterPage> {
             children: [
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Username'),
-                validator: (value) => value == null || value.isEmpty ? 'Enter a username' : null,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Enter an email';
+                  }
+                  if (!value.contains('@') || !value.contains('.')) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
-                validator: (value) => value == null || value.isEmpty ? 'Enter a password' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Enter a password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(

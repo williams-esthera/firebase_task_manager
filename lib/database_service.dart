@@ -41,6 +41,9 @@ class DatabaseService {
       return userCredential.user?.uid;
     } on FirebaseAuthException catch (e) {
       print('Registration error: ${e.code} - ${e.message}');
+      if (e.code == 'email-already-in-use') {
+        throw Exception('Email is already in use');
+      }
       return null;
     } catch (e) {
       print('Unexpected registration error: $e');
@@ -50,11 +53,8 @@ class DatabaseService {
 
   Future<bool> isUsernameTaken(String email) async {
     try {
-      final querySnapshot = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-      return querySnapshot.docs.isNotEmpty;
+      final signInMethods = await _auth.fetchSignInMethodsForEmail(email);
+      return signInMethods.isNotEmpty;
     } catch (e) {
       print('Error checking email: $e');
       return false;
