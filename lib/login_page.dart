@@ -8,7 +8,8 @@ import 'app_colors.dart';
 import 'database_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final UserState credentials;
+  const LoginPage({super.key, required this.credentials});
 
   @override
   LoginPageState createState() {
@@ -19,9 +20,8 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final DatabaseService _databaseService = DatabaseService.instance;
-  final UserState _localStorage = UserState();
 
-  String? username;
+  String? email;
   String? password;
 
   @override
@@ -72,7 +72,7 @@ class LoginPageState extends State<LoginPage> {
                           border: OutlineInputBorder(),
                           label: Text('Username'),  
                         ),
-                        onSaved: (value) => username = value,
+                        onSaved: (value) => email = value,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter Username';
@@ -109,16 +109,16 @@ class LoginPageState extends State<LoginPage> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        final userId = await _databaseService.verifyLogin(username!, password!);
+                        final userId = await _databaseService.verifyLogin(email!, password!);
                         
                         if (userId != null) {
-                          _localStorage.userId = userId;
-                          _localStorage.username = username;
+                          widget.credentials.userId = userId;
+                          widget.credentials.username = email;
 
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TaskListScreen(title: 'Task Manager', credentials:_localStorage),
+                              builder: (context) => TaskListScreen(title: 'Task Manager', credentials: widget.credentials),
                             ),
                           );
                         } else {

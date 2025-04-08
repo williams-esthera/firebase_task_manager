@@ -6,7 +6,8 @@ import 'login_page.dart';
 import 'main.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final UserState credentials;
+  const RegisterPage({super.key, required this.credentials});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -35,15 +36,14 @@ class _RegisterPageState extends State<RegisterPage> {
         final userId = await _databaseService.addLogin(email, password);
 
         if (userId != null) {
-          UserState localStorage = UserState();
-          localStorage.userId = userId;
-          localStorage.username = email;
+          widget.credentials.userId = userId;
+          widget.credentials.username = email;
           
           if (mounted) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => TaskListScreen(title: 'Task Manager', credentials: localStorage),
+                builder: (context) => TaskListScreen(title: 'Task Manager', credentials: widget.credentials),
               ),
             );
           }
@@ -118,7 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  MaterialPageRoute(builder: (context) => LoginPage(credentials: widget.credentials)),
                 ),
                 child: const Text('Already have an account? Login',
                 style: TextStyle(

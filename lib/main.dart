@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'register_page.dart';
+import 'login_page.dart';
 import 'user_state.dart';
 import 'database_service.dart';
 import 'app_colors.dart';
@@ -24,19 +25,28 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final userState = UserState();
+    
     return MaterialApp(
       title: 'My Task Manager',
-
-       initialRoute: '/register',
+      initialRoute: '/register',
       routes: {
-        '/register': (context) => const RegisterPage(),
-        '/main': (context) => TaskListScreen(title: 'Task Manager', credentials: UserState()),
+        '/login': (context) => LoginPage(credentials: userState),
+        '/register': (context) => RegisterPage(credentials: userState),
+        '/main': (context) => TaskListScreen(title: 'Task Manager', credentials: userState),
       },
       theme: ThemeData(
-        // This is the theme of your application.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.light(
+          primary: AppColors.accent1,
+          secondary: AppColors.accent2,
+          background: AppColors.background,
+          surface: Colors.white,
+          onPrimary: AppColors.background,
+          onSecondary: AppColors.text,
+          onBackground: AppColors.text,
+          onSurface: AppColors.text,
+        ),
       ),
-      home: TaskListScreen(title: 'Task Manager', credentials: UserState()),
     );
   }
 }
