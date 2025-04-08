@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'register_page.dart';
 import 'user_state.dart';
 import 'database_service.dart';
+import 'app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
