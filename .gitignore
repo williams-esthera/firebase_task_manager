@@ -47,3 +47,10 @@ app.*.map.json
 # Firebase
 .firebase/
 lib/firebase_options.dart
+firebase.json
+
+# FlutterFire CLI
+.flutterfire/
+
+# FlutterFire CLI
+.flutterfire/

@@ -9,63 +9,91 @@ class DatabaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Authentication methods
-  Future<String?> verifyLogin(String username, String password) async {
+  Future<String?> verifyLogin(String email, String password) async {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
-        email: username,
+        email: email,
         password: password,
       );
       return userCredential.user?.uid;
+    } on FirebaseAuthException catch (e) {
+      print('Login error: ${e.code} - ${e.message}');
+      return null;
     } catch (e) {
+      print('Unexpected login error: $e');
       return null;
     }
   }
 
-  Future<String?> addLogin(String username, String password) async {
+  Future<String?> addLogin(String email, String password) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: username,
+        email: email,
         password: password,
       );
       
       // Store additional user data in Firestore
       await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'username': username,
+        'email': email,
         'createdAt': FieldValue.serverTimestamp(),
       });
       
       return userCredential.user?.uid;
+    } on FirebaseAuthException catch (e) {
+      print('Registration error: ${e.code} - ${e.message}');
+      return null;
     } catch (e) {
+      print('Unexpected registration error: $e');
       return null;
     }
   }
 
-  Future<bool> isUsernameTaken(String username) async {
-    final querySnapshot = await _firestore
-        .collection('users')
-        .where('username', isEqualTo: username)
-        .get();
-    return querySnapshot.docs.isNotEmpty;
+  Future<bool> isUsernameTaken(String email) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      print('Error checking email: $e');
+      return false;
+    }
   }
 
   // Task methods
   Future<void> addTask(String userId, String taskName) async {
-    await _firestore.collection('tasks').add({
-      'userId': userId,
-      'taskName': taskName,
-      'isCompleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await _firestore.collection('tasks').add({
+        'userId': userId,
+        'taskName': taskName,
+        'isCompleted': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error adding task: $e');
+      rethrow;
+    }
   }
 
   Future<void> deleteTask(String taskId) async {
-    await _firestore.collection('tasks').doc(taskId).delete();
+    try {
+      await _firestore.collection('tasks').doc(taskId).delete();
+    } catch (e) {
+      print('Error deleting task: $e');
+      rethrow;
+    }
   }
 
   Future<void> toggleTaskCompletion(String taskId, bool isCompleted) async {
-    await _firestore.collection('tasks').doc(taskId).update({
-      'isCompleted': isCompleted,
-    });
+    try {
+      await _firestore.collection('tasks').doc(taskId).update({
+        'isCompleted': isCompleted,
+      });
+    } catch (e) {
+      print('Error toggling task: $e');
+      rethrow;
+    }
   }
 
   Stream<QuerySnapshot> getTasks(String userId) {

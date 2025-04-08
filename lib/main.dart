@@ -7,6 +7,8 @@ import 'register_page.dart';
 import 'user_state.dart';
 import 'database_service.dart';
 import 'app_colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'task.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
